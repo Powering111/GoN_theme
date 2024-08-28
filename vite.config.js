@@ -62,7 +62,7 @@ export default defineConfig({
         users_public: resolve(__dirname, "assets/js/users/public.js"),
         users_private: resolve(__dirname, "assets/js/users/private.js"),
         users_list: resolve(__dirname, "assets/js/users/list.js"),
-        main: resolve(__dirname, "assets/scss/main.scss"),
+        main_css: resolve(__dirname, "assets/scss/main.scss"),
       },
     },
   },
