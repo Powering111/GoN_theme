@@ -1,0 +1,62 @@
+<!-- fullscreen navigation -->
+<nav class="navigation" x-data="{ visible:false }" x-cloak x-show="visible"
+    x-transition:enter-start="transition-enter-start" x-transition:leave="transition-leave"
+    @keydown.window.escape.prevent="visible = !visible">
+    <div class="navigation-head">
+        <!-- Home -->
+        <a class="navigation-elem" href="/">
+            <img src="{{ url_for('views.themes', path='img/home_1.svg' ) }}" class="navigation-image-1" />
+            <img src="{{ url_for('views.themes', path='img/home_2.svg' ) }}" class="navigation-image-2" />
+        </a>
+
+        <!-- Challenges -->
+        <a class="navigation-elem" href="{{ url_for('challenges.listing') }}">
+            <img src="{{ url_for('views.themes', path='img/challenges_1.svg' ) }}" class="navigation-image-1" />
+            <img src="{{ url_for('views.themes', path='img/challenges_2.svg' ) }}" class="navigation-image-2" />
+        </a>
+
+        <!-- Scoreboard -->
+        <a class="navigation-elem" href="{{ url_for('scoreboard.listing') }}">
+            <img src="{{ url_for('views.themes', path='img/scoreboard_1.svg' ) }}" class="navigation-image-1" />
+            <img src="{{ url_for('views.themes', path='img/scoreboard_2.svg' ) }}" class="navigation-image-2" />
+        </a>
+
+        <!-- Users -->
+        <a class="navigation-elem" href="{{ url_for('users.listing') }}">
+            <img src="{{ url_for('views.themes', path='img/user_1.svg' ) }}" class="navigation-image-1" />
+            <img src="{{ url_for('views.themes', path='img/user_2.svg' ) }}" class="navigation-image-2" />
+        </a>
+    </div>
+    <div class="navigation-fill" @click="visible=false"></div>
+    <div class="navigation-tail">
+        <!-- Profile -->
+        <a class="navigation-elem" href="{{ url_for('users.private') }}">
+            <img src="{{ url_for('views.themes', path='img/menu_profile.svg') }}" />
+        </a>
+
+        <!-- Guide -->
+        <a class="navigation-elem" href="/guide">
+            <img src="{{ url_for('views.themes', path='img/menu_guide.svg') }}" />
+        </a>
+
+        <!-- Notifications -->
+        <a class="navigation-elem" href="{{ url_for('views.notifications') }}">
+            <img src="{{ url_for('views.themes', path='img/menu_notification_1.svg') }}"
+                x-show="$store.unread_count <= 0" />
+            <img src="{{ url_for('views.themes', path='img/menu_notification_2.svg') }}"
+                x-show="$store.unread_count > 0" />
+        </a>
+
+        <!-- Setting -->
+        <a class="navigation-elem">
+            <img src="{{ url_for('views.themes', path='img/menu_setting.svg') }}" />
+        </a>
+
+        <!-- Admin -->
+        {% if authed() and is_admin() %}
+        <a class="navigation-elem" href="{{ url_for('admin.view') }}">
+            <img src="{{ url_for('views.themes', path='img/menu_admin.svg') }}" />
+        </a>
+        {% endif %}
+    </div>
+</nav>

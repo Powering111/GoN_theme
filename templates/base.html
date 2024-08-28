@@ -6,45 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" href="{{ Configs.ctf_small_icon }}" type="image/x-icon">
 
-  <script>
-    // This script is inlined to reduce color flashing issues
-    function getPreferredTheme() {
-      const storedTheme = localStorage.getItem("theme");
-      if (storedTheme) {
-        return storedTheme;
-      }
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    }
-    function showActiveTheme(theme) {
-      const activeThemeIcon = document.querySelector(".theme-switch i.fas");
-      activeThemeIcon.classList.toggle("fa-moon", theme === "dark");
-      activeThemeIcon.classList.toggle("fa-sun", theme !== "dark");
-    }
-    // Change body theme early to prevent flash
-    let currentTheme = getPreferredTheme();
-    document.documentElement.setAttribute("data-bs-theme", currentTheme);
-    // On browser color-scheme change, update
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-      currentTheme = getPreferredTheme();
-      document.documentElement.setAttribute("data-bs-theme", currentTheme);
-      showActiveTheme(currentTheme);
-    });
-    window.addEventListener("load", () => {
-      showActiveTheme(currentTheme);
-      document.querySelectorAll(".theme-switch").forEach(e => {
-        e.addEventListener("click", ev => {
-          currentTheme = currentTheme === "light" ? "dark" : "light";
-          document.documentElement.setAttribute("data-bs-theme", currentTheme);
-          localStorage.setItem("theme", currentTheme);
-          showActiveTheme(currentTheme);
-          ev.preventDefault();
-        });
-      });
-    });
-  </script>
 
   {{ meta | safe }}
-
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
   {% block stylesheets %}
     {{ Assets.css("assets/scss/main.scss") }}
   {% endblock %}
@@ -71,24 +37,19 @@
       }
   </script>
 
-  {{ Configs.theme_header }}
 </head>
 <body>
-{% include "components/navbar.html" %}
+
+{% include "components/navigation.html" %}
 
 <main role="main">
   {% block content %}
   {% endblock %}
 </main>
 
-<footer class="footer">
-  <div class="container text-center">
-    <a href="https://ctfd.io" class="text-secondary">
-      <small class="text-muted">
-        {% trans %}Powered by CTFd{% endtrans %}
-      </small>
-    </a>
-  </div>
+<footer>
+  {% block footer %}
+  {% endblock %}
 </footer>
 
 {% include "components/notifications.html" %}

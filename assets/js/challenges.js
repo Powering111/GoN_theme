@@ -97,10 +97,6 @@ Alpine.data("Challenge", () => ({
     return styles;
   },
 
-  async init() {
-    highlight();
-  },
-
   async showChallenge() {
     new Tab(this.$el).show();
   },
@@ -281,6 +277,36 @@ Alpine.data("ChallengeBoard", () => ({
       });
     });
   },
+
+
+  selected_idx:0,
+
+  selectNextChallenge(){
+    this.selected_idx += 1;
+    if(this.selected_idx >= this.challenges.length) {
+      this.selected_idx = this.challenges.length - 1;
+    }
+  },
+  
+  selectPreviousChallenge(){
+    this.selected_idx -= 1;
+    if(this.selected_idx < 0) {
+      this.selected_idx = 0;
+    }
+  },
+  
+  handleWheel(event){
+    if(event.deltaY > 0) {
+      this.selectNextChallenge();
+    }
+    else if(event.deltaY < 0){
+      this.selectPreviousChallenge();
+    }
+  },
+
+  selected_category: null,
+
 }));
+
 
 Alpine.start();
