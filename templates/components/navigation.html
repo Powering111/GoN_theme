@@ -1,7 +1,8 @@
 <!-- fullscreen navigation -->
-<nav class="navigation" x-data="{ visible:false }" x-cloak x-show="visible"
+<nav ref="navigation" class="navigation" x-data="{ visible:false }" x-cloak x-show="visible"
     x-transition:enter-start="transition-enter-start" x-transition:leave="transition-leave"
-    @keydown.window.escape.prevent="visible = !visible">
+    @open-navigation.window="visible = !visible"
+    @click="visible=false">
     <div class="navigation-head">
         <!-- Home -->
         <a class="navigation-elem" href="/">

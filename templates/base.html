@@ -42,15 +42,22 @@
 
 {% include "components/navigation.html" %}
 
-<main role="main">
-  {% block content %}
-  {% endblock %}
-</main>
+<div class="root">
+  <header>
+    {% block header %}
+    {% endblock %}
+  </header>
 
-<footer>
-  {% block footer %}
-  {% endblock %}
-</footer>
+  <main role="main">
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  <footer>
+    {% block footer %}
+    {% endblock %}
+  </footer>
+</div>
 
 {% include "components/notifications.html" %}
 

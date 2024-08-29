@@ -18,6 +18,134 @@ function addTargetBlank(html) {
 
 window.Alpine = Alpine;
 
+Alpine.store("info", {
+  categories: [],
+  challenges: [],
+  selection: {
+    challenge_idx: 0,
+    category: null,
+  },
+
+  getCategories() {
+    const categories = [];
+
+    this.challenges.forEach(challenge => {
+      const { category } = challenge;
+
+      if (!categories.includes(category)) {
+        categories.push(category);
+      }
+    });
+
+    try {
+      const f = CTFd.config.themeSettings.challenge_category_order;
+      if (f) {
+        const getSort = new Function(`return (${f})`);
+        categories.sort(getSort());
+      }
+    } catch (error) {
+      // Ignore errors with theme category sorting
+      console.log("Error running challenge_category_order function");
+      console.log(error);
+    }
+
+    return categories;
+  },
+  
+  async loadChallengeList() {
+    this.challenges = await CTFd.pages.challenges.getChallenges();
+    this.categories = this.getCategories();
+  },
+
+  getChallengesOf(category) {
+    let challenges = this.challenges;
+
+    if (category !== null) {
+      challenges = challenges.filter(challenge => challenge.category === category);
+    }
+
+    try {
+      const f = CTFd.config.themeSettings.challenge_order;
+      if (f) {
+        const getSort = new Function(`return (${f})`);
+        challenges.sort(getSort());
+      }
+    } catch (error) {
+      // Ignore errors with theme challenge sorting
+      console.log("Error running challenge_order function");
+      console.log(error);
+    }
+
+    return challenges;
+  },
+
+  // load details of the challenge from server
+  async loadChallenge(challengeId) {
+    const idx = this.challenges.findIndex(c => c.id === challengeId);
+    if(idx == -1) return null;
+  
+    if (!("detail" in this.challenges[idx])) {
+      this.challenges[idx].detail = null;
+      await CTFd.pages.challenge.displayChallenge(challengeId, challenge => { 
+        this.challenges[idx].detail = challenge.data;
+        window.dispatchEvent(new CustomEvent('update-challenge', {detail: this.currentChallenge()}))
+      });
+    }
+  },
+
+  currentChallengeId(){
+    return this.getChallengesOf(this.selection.category)[this.selection.challenge_idx].id;
+  },
+
+  // get current challenge object
+  currentChallenge(){
+    return this.challenges.find(c => c.id === this.currentChallengeId());
+  },
+
+  selectChallenge(challengeId){
+    if(this.currentChallengeId()===challengeId) return; // TODO: open details
+
+    let idx = this.getChallengesOf(this.selection.category).findIndex(c => c.id === challengeId);
+    if(idx === -1) {
+      this.selection.category = null;
+      idx = this.getChallengesOf(this.selection.category).findIndex(c => c.id === challengeId);
+      if(idx === -1 ) {
+        console.log(`Challenge ${challengeId} does not exist.`)
+        return;
+      }
+    }
+    this.selection.challenge_idx = idx;
+    this.selection.challenge_id = challengeId;
+    this.loadChallenge(challengeId);
+    window.dispatchEvent(new CustomEvent('update-challenge', {detail: this.currentChallenge()}))
+
+  },
+
+  selectNextChallenge(){
+    const current_list = this.getChallengesOf(this.selection.category);
+    let new_idx = this.selection.challenge_idx + 1;
+    let l = this.challenges.length;
+    if(new_idx >= l) {
+      new_idx = l - 1;
+    }
+    else{
+      this.selectChallenge(current_list[new_idx].id)
+    }
+  },
+  
+  selectPreviousChallenge(){
+    const current_list = this.getChallengesOf(this.selection.category);
+    let new_idx = this.selection.challenge_idx - 1;
+    if(new_idx < 0) {
+      new_idx = 0;
+    }
+    else{
+      this.selectChallenge(current_list[new_idx].id)
+    }
+  },
+})
+
+
 Alpine.store("challenge", {
   data: {
     view: "",
@@ -184,11 +312,10 @@ Alpine.data("Challenge", () => ({
 
 Alpine.data("ChallengeBoard", () => ({
   loaded: false,
-  challenges: [],
   challenge: null,
 
   async init() {
-    this.challenges = await CTFd.pages.challenges.getChallenges();
+    await Alpine.store('info').loadChallengeList();
     this.loaded = true;
 
     if (window.location.hash) {
@@ -197,116 +324,79 @@ Alpine.data("ChallengeBoard", () => ({
       if (idx >= 0) {
         let pieces = [chalHash.slice(0, idx), chalHash.slice(idx + 1)];
         let id = pieces[1];
-        await this.loadChallenge(id);
+        Alpine.store('info').selectChallenge(id);
       }
     }
-  },
-
-  getCategories() {
-    const categories = [];
-
-    this.challenges.forEach(challenge => {
-      const { category } = challenge;
-
-      if (!categories.includes(category)) {
-        categories.push(category);
+    else{
+      if(Alpine.store('info').challenges.length > 0){
+        // automatically select the very first challenge
+        Alpine.store('info').loadChallenge(Alpine.store('info').challenges[0].id);
       }
-    });
 
-    try {
-      const f = CTFd.config.themeSettings.challenge_category_order;
-      if (f) {
-        const getSort = new Function(`return (${f})`);
-        categories.sort(getSort());
-      }
-    } catch (error) {
-      // Ignore errors with theme category sorting
-      console.log("Error running challenge_category_order function");
-      console.log(error);
-    }
-
-    return categories;
-  },
-
-  getChallenges(category) {
-    let challenges = this.challenges;
-
-    if (category !== null) {
-      challenges = this.challenges.filter(challenge => challenge.category === category);
-    }
-
-    try {
-      const f = CTFd.config.themeSettings.challenge_order;
-      if (f) {
-        const getSort = new Function(`return (${f})`);
-        challenges.sort(getSort());
-      }
-    } catch (error) {
-      // Ignore errors with theme challenge sorting
-      console.log("Error running challenge_order function");
-      console.log(error);
-    }
-
-    return challenges;
-  },
-
-  async loadChallenges() {
-    this.challenges = await CTFd.pages.challenges.getChallenges();
-  },
-
-  async loadChallenge(challengeId) {
-    await CTFd.pages.challenge.displayChallenge(challengeId, challenge => {
-      challenge.data.view = addTargetBlank(challenge.data.view);
-      Alpine.store("challenge").data = challenge.data;
-
-      // nextTick is required here because we're working in a callback
-      Alpine.nextTick(() => {
-        let modal = Modal.getOrCreateInstance("[x-ref='challengeWindow']");
-        // TODO: Get rid of this private attribute access
-        // See https://github.com/twbs/bootstrap/issues/31266
-        modal._element.addEventListener(
-          "hidden.bs.modal",
-          event => {
-            // Remove location hash
-            history.replaceState(null, null, " ");
-          },
-          { once: true },
-        );
-        modal.show();
-        history.replaceState(null, null, `#${challenge.data.name}-${challengeId}`);
-      });
-    });
-  },
-
-
-  selected_idx:0,
-
-  selectNextChallenge(){
-    this.selected_idx += 1;
-    if(this.selected_idx >= this.challenges.length) {
-      this.selected_idx = this.challenges.length - 1;
-    }
-  },
-  
-  selectPreviousChallenge(){
-    this.selected_idx -= 1;
-    if(this.selected_idx < 0) {
-      this.selected_idx = 0;
     }
   },
   
   handleWheel(event){
     if(event.deltaY > 0) {
-      this.selectNextChallenge();
+      Alpine.store('info').selectNextChallenge();
     }
     else if(event.deltaY < 0){
-      this.selectPreviousChallenge();
+      Alpine.store('info').selectPreviousChallenge();
+    }
+  },
+}));
+
+Alpine.data('ChallengeInfo', () => ({
+
+  // copy of the current challenge, to make life easier
+  challenge: {name: 'Nothing here', category: 'CTF'},
+  loaded_challenge: null,
+
+  // used only for loading animation
+  loading: false,
+  loading_timeout: null,
+
+  getChallengeThumbnail() {
+    const one = this.challenge.detail?.files?.find(f => f.includes('.png'))
+    if (!one) return;
+    const query_idx = one.lastIndexOf('?');
+    return one.substring(0,query_idx)
+  },
+  
+  getChallengeDifficulty() {
+    const difficulty_str = this.challenge.tags?.find(f => f.value.startsWith('difficulty-'));
+    if(!difficulty_str) {
+      return 0;
+    }
+    const maybe_number = parseInt(difficulty_str.value.substring('difficulty-'.length))
+    if(Number.isNaN(maybe_number)){
+      return 0;
+    }
+    else{
+      return maybe_number;
     }
   },
 
-  selected_category: null,
+  handleUpdateChallenge(event) {
+    this.loaded_challenge = event.detail;
 
+    this.loading=true;
+    if(this.loading_timeout){
+      clearTimeout(this.loading_timeout)
+    }
+    this.loading_timeout = setTimeout(()=>{ 
+      this.challenge=this.loaded_challenge;
+
+      // this.loading is set to false when image is loaded.
+      Alpine.nextTick(()=>{
+        if(this.$refs.challenge_info_img.complete) {
+          this.loading=false;
+        }
+      })
+      
+    },300);
+  }
+  
 }));
-
 
 Alpine.start();

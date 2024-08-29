@@ -9,3 +9,13 @@
 {% block scripts %}
   {{ Assets.js("assets/js/page.js") }}
 {% endblock %}
+
+{% block footer %}
+<button class="footer-elem" 
+  x-data
+  @click="$dispatch('open-navigation')"
+  @keydown.window.Escape.prevent="$dispatch('open-navigation')">
+  <span class="footer-highlight">Esc</span>
+  Open menu
+</button>
+{% endblock %}

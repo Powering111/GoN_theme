@@ -1,6 +1,4 @@
-@use "bootstrap/scss/bootstrap" as * with (
-  $info: #5c728f
-);
+// @use "bootstrap/scss/bootstrap" as * with ($info: #5c728f);
 
 @use "includes/components/table";
 @use "includes/components/jumbotron";
@@ -28,15 +26,8 @@ a {
 }
 
 blockquote {
-  border-left: 4px solid $secondary;
+  border-left: 4px solid gray;
   padding-left: 15px;
-}
-
-input,
-select,
-button {
-  padding: 0.6rem !important;
-  height: auto !important;
 }
 
 .fa-spin.spinner {
@@ -56,7 +47,8 @@ button {
 }
 
 html,
-body {
+body,
+.root {
   background: #343a40;
 
   width: 100%;
@@ -68,11 +60,28 @@ body {
   overflow: hidden;
 }
 
+.root {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+header {
+  padding: 10px 30px;
+  h1 {
+    margin:0;
+  }
+}
+
 main {
+  background: #444c53;
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 10px;
+  flex-grow: 1;
+  flex-shrink: 1;
 }
 
 .alert-box {
@@ -82,4 +91,43 @@ main {
   right: 10px;
   width: 500px;
   z-index: 1031;
+}
+
+footer {
+  user-select: none;
+
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+
+  .footer-elem {
+    font-size: 1em;
+    display: inline-block;
+
+    margin: 5px 10px 10px 10px;
+    padding: 5px 10px;
+    
+    border-style: none;
+    border-radius: 5px;
+    outline:none;
+
+    background: transparent;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #494e52;
+    }
+
+    .footer-highlight {
+      margin-right: 5px;
+      font-size: 0.8em;
+      padding: 4px;
+      border: 2px solid gray;
+      border-radius: 3px;
+    }
+  }
+}
+
+div, img, main {
+  box-sizing: border-box;
 }

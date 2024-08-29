@@ -13,6 +13,8 @@ nav.navigation {
     flex-flow: column nowrap;
     justify-content: space-between;
 
+    backdrop-filter: blur(3px);
+
     .navigation-head {
         width: 100%;
         margin-top: 25px;
@@ -38,6 +40,7 @@ nav.navigation {
                 width: $navigation-image-size;
                 height: $navigation-image-size;
                 position: absolute;
+                opacity:0.8;
             }
 
             .navigation-image-2 {
@@ -52,6 +55,7 @@ nav.navigation {
                 mask-image: linear-gradient(-45deg, transparent 50%, black 50%);
                 mask-size: 300%;
                 mask-position: 100% 100%;
+                mask-repeat: no-repeat;
                 transition: mask-position 0.3s ease-out;
             }
 
