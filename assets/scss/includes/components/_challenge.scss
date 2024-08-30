@@ -2,13 +2,13 @@
 -------------------------------------------------- */
 
 @property --category-grad {
-  syntax:  "<image>";
+  syntax: "<image>";
   inherits: true;
   initial-value: linear-gradient(to right, #000000, #9e9e9e);
 }
 
 @property --category-color {
-  syntax:  "<color>";
+  syntax: "<color>";
   inherits: true;
   initial-value: #3a3a3a;
 }
@@ -49,7 +49,7 @@
       position: relative;
 
       .challenge-info-img {
-        display:block;
+        display: block;
         width: 100%;
         height: 100%;
         user-select: none;
@@ -162,18 +162,17 @@
   border: none;
   border-left: 6px solid var(--category-color);
 
-  
   margin: 10px 0px;
   padding: 0.7rem;
-  
+
   width: 100%;
   max-height: 100px;
-  
+
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
   align-items: center;
-  
+
   &:hover {
     background: #ffffff44;
   }
@@ -202,22 +201,21 @@
   .challenge-button-difficulty {
     img {
       vertical-align: middle;
-      margin:2px;
+      margin: 2px;
     }
   }
   .challenge-button-value {
     font-size: 1.5rem;
-    color:rgb(255, 153, 0);
+    color: rgb(255, 153, 0);
   }
 
   .challenge-button-solved {
-    display:block;
-    width: 2.0rem;
-    height: 2.0rem;
-    margin: auto 2.0rem;
+    display: block;
+    width: 2rem;
+    height: 2rem;
+    margin: auto 2rem;
   }
 }
-
 
 // per category variable definitions
 .category-rev {

@@ -25,7 +25,8 @@ a {
   text-decoration: none !important;
 }
 
-button, img {
+button,
+img {
   user-select: none;
 }
 
@@ -74,7 +75,7 @@ body,
 header {
   padding: 10px 30px;
   h1 {
-    margin:0;
+    margin: 0;
   }
 }
 
@@ -94,52 +95,52 @@ main {
   top: 10px;
   right: 10px;
   width: 500px;
-  max-height:50vh;
+  max-height: 50vh;
   overflow: auto;
   z-index: 1031;
 
   .alert {
-    width:100%;
-    border:5px solid;
+    width: 100%;
+    border: 5px solid;
     border-radius: 10px;
-    padding:10px;
-    margin-bottom:10px;
-    display:flex;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
     flex-flow: row nowrap;
     align-items: center;
     opacity: 0.6;
 
-    &:hover{
+    &:hover {
       opacity: 1;
     }
 
-    &.alert-info{
+    &.alert-info {
       background-color: rgb(255, 200, 97);
       border-color: orange;
     }
-    &.alert-error{
+    &.alert-error {
       background-color: rgb(255, 113, 113);
       border-color: rgb(255, 52, 52);
     }
 
     p {
-      color:black;
+      color: black;
       width: 100%;
       font-size: 1.2em;
-      margin:5px;
+      margin: 5px;
     }
-    button{
+    button {
       color: black;
       font-size: 1.2em;
       background: #ffffff30;
-      padding:10px;
+      padding: 10px;
       border: 3px solid rgb(18, 18, 18);
       border-radius: 5px;
-      outline:none;
+      outline: none;
       align-self: stretch;
 
-      &:hover{
-        background:#ffffff88;
+      &:hover {
+        background: #ffffff88;
       }
     }
   }
@@ -158,10 +159,10 @@ footer {
 
     margin: 5px 10px 10px 10px;
     padding: 5px 10px;
-    
+
     border-style: none;
     border-radius: 5px;
-    outline:none;
+    outline: none;
 
     background: transparent;
     transition: background-color 0.2s;
@@ -180,6 +181,8 @@ footer {
   }
 }
 
-div, img, main {
+div,
+img,
+main {
   box-sizing: border-box;
 }

@@ -1,140 +1,143 @@
 nav.navigation {
-    position: absolute;
-    top: 0;
-    left: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  user-select: none;
+  z-index: 2000;
+
+  background: linear-gradient(
+    to bottom,
+    #00000066 8%,
+    transparent 16%,
+    transparent 84%,
+    #00000066 92%
+  );
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: space-between;
+
+  backdrop-filter: blur(3px);
+
+  opacity: 1;
+  transition: opacity 0.3s;
+
+  .navigation-head {
     width: 100%;
-    height: 100%;
-
-    user-select: none;
-    z-index: 2000;
-
-    background: linear-gradient(to bottom, #00000066 8%, transparent 16%, transparent 84%, #00000066 92%);
+    margin-top: 25px;
     display: flex;
-    flex-flow: column nowrap;
-    justify-content: space-between;
+    flex-flow: row wrap;
+    justify-content: center;
 
-    backdrop-filter: blur(3px);
-    
-    opacity:1;
-    transition: opacity 0.3s;
+    transition: transform 0.2s;
+
+    .navigation-elem {
+      display: inline-block;
+      margin: 10px;
+
+      $navigation-image-size: 150px;
+
+      cursor: pointer;
+
+      position: relative;
+      width: $navigation-image-size;
+      height: $navigation-image-size;
+
+      .navigation-image-1 {
+        z-index: 0;
+        width: $navigation-image-size;
+        height: $navigation-image-size;
+        position: absolute;
+        opacity: 0.8;
+      }
+
+      .navigation-image-2 {
+        z-index: 1;
+        position: absolute;
+        top: 0;
+        left: 0;
+
+        width: $navigation-image-size;
+        height: $navigation-image-size;
+
+        mask-image: linear-gradient(-45deg, transparent 50%, black 50%);
+        mask-size: 300%;
+        mask-position: 100% 100%;
+        mask-repeat: no-repeat;
+        transition: mask-position 0.3s ease-out;
+      }
+
+      &:hover {
+        transform: scale(1.2);
+
+        .navigation-image-2 {
+          mask-position: 0 0;
+        }
+      }
+    }
+  }
+
+  .navigation-fill {
+    flex-grow: 1;
+    background: transparent;
+    width: 100%;
+  }
+
+  .navigation-tail {
+    width: 100%;
+    margin-bottom: 50px;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+
+    .navigation-elem {
+      $navigation-image-size: 70px;
+
+      display: inline-block;
+      margin: 20px;
+
+      cursor: pointer;
+
+      transition:
+        filter 0.1s,
+        transform 0.1s;
+
+      img {
+        width: $navigation-image-size;
+        height: $navigation-image-size;
+      }
+
+      &:hover {
+        filter: brightness(1.2);
+        transform: translate(-1px, -1px);
+      }
+    }
+  }
+
+  // transitions
+  &.transition-enter-start,
+  &.transition-leave {
+    opacity: 0;
+    pointer-events: none;
 
     .navigation-head {
-        width: 100%;
-        margin-top: 25px;
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: center;
-
-        transition: transform 0.2s;
-
-        .navigation-elem {
-            display: inline-block;
-            margin: 10px;
-
-            $navigation-image-size: 150px;
-
-            cursor: pointer;
-
-            position: relative;
-            width: $navigation-image-size;
-            height: $navigation-image-size;
-
-
-            .navigation-image-1 {
-                z-index: 0;
-                width: $navigation-image-size;
-                height: $navigation-image-size;
-                position: absolute;
-                opacity:0.8;
-            }
-
-            .navigation-image-2 {
-                z-index: 1;
-                position: absolute;
-                top: 0;
-                left: 0;
-
-                width: $navigation-image-size;
-                height: $navigation-image-size;
-
-                mask-image: linear-gradient(-45deg, transparent 50%, black 50%);
-                mask-size: 300%;
-                mask-position: 100% 100%;
-                mask-repeat: no-repeat;
-                transition: mask-position 0.3s ease-out;
-            }
-
-            &:hover {
-                transform: scale(1.2);
-
-                .navigation-image-2 {
-                    mask-position: 0 0;
-                }
-            }
-        }
-    }
-
-    .navigation-fill{
-        flex-grow:1;
-        background:transparent;
-        width:100%;
+      transform: translateY(-100%);
     }
 
     .navigation-tail {
-        width: 100%;
-        margin-bottom: 50px;
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: center;
-
-        .navigation-elem {
-            $navigation-image-size: 70px;
-            
-            display: inline-block;
-            margin: 20px;
-            
-            cursor: pointer;
-            
-            transition: filter 0.1s, transform 0.1s;
-
-            img {
-                width: $navigation-image-size;
-                height: $navigation-image-size;
-            }
-
-            &:hover {
-                filter: brightness(1.2);
-                transform: translate(-1px, -1px);
-            }
-        }
+      transform: translateY(100%);
     }
+  }
 
+  .navigation-head {
+    transform: none;
+    transition: transform 0.3s;
+  }
 
-
-    // transitions
-    &.transition-enter-start,
-    &.transition-leave {
-        opacity: 0;
-        pointer-events: none;
-
-        .navigation-head {
-            transform: translateY(-100%);
-        }
-
-        .navigation-tail {
-            transform: translateY(100%);
-        }
-    }
-
-
-    .navigation-head {
-        transform: none;
-        transition: transform 0.3s;
-    }
-
-    .navigation-tail {
-        transform: none;
-        transition: transform 0.3s;
-    }
-
+  .navigation-tail {
+    transform: none;
+    transition: transform 0.3s;
+  }
 }
