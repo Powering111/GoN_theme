@@ -1,7 +1,17 @@
 /* Challenge styles
 -------------------------------------------------- */
-$grad1 : linear-gradient(to right, #f8a100, #9200b7);
 
+@property --category-grad {
+  syntax:  "<image>";
+  inherits: true;
+  initial-value: linear-gradient(to right, #000000, #9e9e9e);
+}
+
+@property --category-color {
+  syntax:  "<color>";
+  inherits: true;
+  initial-value: #3a3a3a;
+}
 
 .challenge-desc {
   overflow-wrap: anywhere;
@@ -12,12 +22,12 @@ $grad1 : linear-gradient(to right, #f8a100, #9200b7);
 }
 
 .challenge-board {
+  overflow: hidden;
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-evenly;
   align-items: stretch;
   height: 100%;
-  margin: 5px 0px;
 
   .challenge-info {
     $challenge-info-size: 500px;
@@ -25,8 +35,9 @@ $grad1 : linear-gradient(to right, #f8a100, #9200b7);
     width: $challenge-info-size;
     margin: 20px 30px;
     padding: 5px;
+    box-shadow: #000000ab 3px 4px 9px 0px;
 
-    transition: transform 0.3s;
+    transition: transform 0.1s;
 
     &.challenge-info-loading {
       transform: rotateX(-90deg) translateY(50%) perspective(500px);
@@ -38,9 +49,11 @@ $grad1 : linear-gradient(to right, #f8a100, #9200b7);
       position: relative;
 
       .challenge-info-img {
+        display:block;
         width: 100%;
         height: 100%;
         user-select: none;
+        object-fit: cover;
       }
 
       .challenge-info-category {
@@ -55,7 +68,7 @@ $grad1 : linear-gradient(to right, #f8a100, #9200b7);
         padding-right: 5px;
 
         text-align: center;
-        background: $grad1;
+        background: var(--category-grad);
         mask: linear-gradient(120deg, black 87%, transparent 87%);
 
         color: white;
@@ -68,22 +81,31 @@ $grad1 : linear-gradient(to right, #f8a100, #9200b7);
         position: absolute;
         bottom: 0;
         left: 0;
+
+        display: flex;
+        flex-flow: row nowrap;
         width: 100%;
-        padding: 12px 20px;
-        background: #00000088;
-        color: white;
         height: 40%;
+
+        background: #464646aa;
+        color: white;
 
         .challenge-info-name {
           margin: 2px;
           margin-bottom: 10px;
-          font-size: 2em;
+          font-size: 3em;
         }
 
         .challenge-info-difficulty {
           img {
             margin: 3px;
           }
+        }
+
+        .challenge-info-solved {
+          display: block;
+          align-self: flex-end;
+          margin: 15px;
         }
       }
     }
@@ -116,11 +138,13 @@ $grad1 : linear-gradient(to right, #f8a100, #9200b7);
         border: 5px solid gray;
 
         &:hover {
-          border-image: $grad1 5;
+          border-image: var(--category-grad) 5;
         }
 
         &.category-selected {
-          background: $grad1;
+          color: white;
+          background: var(--category-grad);
+          border-image: var(--category-grad) 5;
         }
       }
     }
@@ -136,41 +160,71 @@ $grad1 : linear-gradient(to right, #f8a100, #9200b7);
   position: relative;
   background: transparent;
   border: none;
-  border-left: 6px solid rgb(0, 97, 188);
+  border-left: 6px solid var(--category-color);
 
-  &:hover {
-    background: #ffffff44;
-  }
-
+  
   margin: 10px 0px;
-  padding: 0.6rem;
-
+  padding: 0.7rem;
+  
   width: 100%;
-
+  max-height: 100px;
+  
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
   align-items: center;
-
-  p {
-    font-size: 1.5em;
-    margin: auto 10px;
+  
+  &:hover {
+    background: #ffffff44;
   }
 
-  .challenge-background {
+  .challenge-button-background {
     z-index: -1;
     position: absolute;
     top: 0;
     left: 0;
     width: 0px;
     height: 100%;
-    background: $grad1;
+    background: var(--category-grad);
     transition: width 0.2s;
   }
 
   &.challenge-selected {
-    .challenge-background {
+    .challenge-button-background {
       width: 100%;
     }
   }
+
+  .challenge-button-name {
+    font-size: 1.7rem;
+    margin: auto 10px;
+  }
+  .challenge-button-difficulty {
+    img {
+      vertical-align: middle;
+      margin:2px;
+    }
+  }
+  .challenge-button-value {
+    font-size: 1.5rem;
+    color:rgb(255, 153, 0);
+  }
+
+  .challenge-button-solved {
+    display:block;
+    width: 2.0rem;
+    height: 2.0rem;
+    margin: auto 2.0rem;
+  }
+}
+
+
+// per category variable definitions
+.category-rev {
+  --category-grad: linear-gradient(to right, #f8a100, #9200b7);
+  --category-color: #ff8800;
+}
+.category-pwn {
+  --category-grad: linear-gradient(to right, #0e22ff, #85c6fb);
+  --category-color: #0080ff;
 }

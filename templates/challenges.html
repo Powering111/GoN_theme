@@ -6,11 +6,9 @@
 </h1>
 {% endblock %}
 {% block content %}
-<div class="alert-box">
-  <div class="col-md-12">
-    {% include "components/errors.html" %}
-  </div>
-</div>
+
+
+{% include "components/errors.html" %}
 
 <div x-ref="challengeWindow" id="challenge-window" class="modal fade" tabindex="-1" role="dialog" x-data=""
   x-html="$store.challenge.data.view"></div>
@@ -29,46 +27,69 @@
   </div>
   
   <div class="challenge-board" x-cloak x-show="loaded">
+    <!-- challenge information -->
     <div x-data="ChallengeInfo" x-cloak class="challenge-info" @update-challenge.window="handleUpdateChallenge" :class="((!challenge.detail) || loading) ? 'challenge-info-loading' : ''">
       <div class="challenge-info-head">
-        <img class="challenge-info-img" x-ref="challenge_info_img" :src="getChallengeThumbnail(challenge) ?? ''" draggable="false" @load="loading=false" alt=""/>
-        <span class="challenge-info-category" x-text="challenge.category.toUpperCase()"></span>
+        <img class="challenge-info-img" x-ref="challenge_info_img" :src="getChallengeThumbnail(challenge) ?? '{{ url_for('views.themes', path='img/no_thumbnail.svg') }}'" draggable="false" @load="loading=false" alt=""/>
+        <span class="challenge-info-category" :class="'category-'+challenge.category.toLowerCase()" x-text="challenge.category.toUpperCase()"></span>
         <div class="challenge-info-overlay">
-          <h2 class="challenge-info-name" x-text="challenge.name"></h2>
-          <div class="challenge-info-difficulty">
-            <template x-for="i in getChallengeDifficulty(challenge)">
-              <img src="{{ url_for('views.themes', path='img/star.svg' ) }}" />
-            </template>
+          <!-- Name & difficulty -->
+          <div style="width:100%; padding: 12px 20px;">
+            <h2 class="challenge-info-name font-title" x-text="challenge.name"></h2>
+            <div class="challenge-info-difficulty">
+              <template x-for="i in challenge.difficulty">
+                <img src="{{ url_for('views.themes', path='img/star.svg' ) }}" draggable="false" />
+              </template>
+            </div>
           </div>
+          <!-- show solved icon if solved -->
+          <img class="challenge-info-solved" x-show="challenge.solved_by_me" src="{{ url_for('views.themes', path='img/solved_3d.svg' ) }}" width="100px" height="100px" draggable="false"/>
         </div>
       </div>
-      <p><span class="challenge-info-value" x-text="$store.info.currentChallenge()?.value"></span> points</p>
-      <p><span class="challenge-info-solves" x-text="$store.info.currentChallenge()?.solves"></span> solves</p>
+      <p><span class="challenge-info-value" x-text="challenge.value"></span> points</p>
+      <p><span class="challenge-info-solves" x-text="challenge.solves"></span> solves</p>
       
     </div>
 
     <div class="challenge-select">
+      <!-- category -->
       <div class="category-list">
         <template x-for="category in $store.info.categories">
-          <button class="category-elem" x-text="category"></button>
+          <button class="category-elem"
+            :class="('category-' + category + ' ') +
+              (category === $store.info.selection.category ? 'category-selected ' : '')"
+            x-text="category.toUpperCase()"
+            @click="$store.info.selectCategory(category)"
+            ></button>
         </template>
       </div>
+      <!-- challenge list -->
       <div class="challenge-list">
-        <template x-for="(c, idx) in $store.info.getChallengesOf($store.info.selection.category)" :key="c.id">
-          <button class="challenge-button"
-            :class="(c.solved_by_me ? 'challenge-solved ' : '') +($store.info.selection.challenge_idx==idx ? 'challenge-selected' : '')"
-            :value="c.id" @click="
-              if($store.info.currentChallengeId()===c.id){
+        <template x-for="(c, idx) in $store.info.challenges_shown" :key="c.id">
+          <button 
+            class="challenge-button"
+            :class="(c.solved_by_me ? 'challenge-solved ' : '') +
+              ($store.info.selection.challenge_idx==idx ? 'challenge-selected ' : '') +
+              'category-'+c.category.toLowerCase()+' '"
+            :value="c.id"
+            @click="if($store.info.selection.challenge_id===c.id){
                 $dispatch('open-details')
               } else { 
                 $store.info.selectChallenge(c.id) 
               }">
-            <div class="challenge-background"></div>
-            <p x-text="c.name"></p>
-            <div>
-              <span x-text="c.value"></span>
-              (<span x-text="c.solves"></span> solves)
+            <div class="challenge-button-background"></div>
+            <div class="challenge-button-name font-title" x-text="c.name"></div>
+            <div class="challenge-button-difficulty">
+              <template x-for="i in c.difficulty">
+                <img src="{{ url_for('views.themes', path='img/star.svg' ) }}" draggable="false" />
+              </template>
             </div>
+            <div style="flex-grow: 1;"></div>
+            <div class="challenge-button-value" x-text="c.value"></div>
+
+            <!-- solve status -->
+            <img class="challenge-button-solved" x-show="c.solved_by_me" src="{{ url_for('views.themes', path='img/solved_flat.svg' ) }}" draggable="false" />
+            <img class="challenge-button-solved" x-show="!c.solved_by_me" src="{{ url_for('views.themes', path='img/not_solved.svg' ) }}" draggable="false" />
           </button>
         </template>
       </div>

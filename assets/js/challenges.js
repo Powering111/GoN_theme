@@ -21,130 +21,145 @@ window.Alpine = Alpine;
 Alpine.store("info", {
   categories: [],
   challenges: [],
+  challenges_shown: [],
   selection: {
+    // challenge which is shown at the info tab
+    challenge_id: null,
+
+    // index of the selected challenge within challenges_shown
     challenge_idx: 0,
-    category: null,
+
+    // currently selected category
+    category: "all",
+
+    // key for the challenge object which is used for sorting
+    sort: "value",
   },
 
   getCategories() {
     const categories = [];
 
     this.challenges.forEach(challenge => {
-      const { category } = challenge;
-
+      let { category } = challenge;
+      category = category.toLowerCase();
       if (!categories.includes(category)) {
         categories.push(category);
       }
     });
+    categories.sort();
 
-    try {
-      const f = CTFd.config.themeSettings.challenge_category_order;
-      if (f) {
-        const getSort = new Function(`return (${f})`);
-        categories.sort(getSort());
-      }
-    } catch (error) {
-      // Ignore errors with theme category sorting
-      console.log("Error running challenge_category_order function");
-      console.log(error);
+    if (!categories.includes("all")) {
+      categories.unshift("all");
     }
-
     return categories;
   },
-  
+
   async loadChallengeList() {
-    this.challenges = await CTFd.pages.challenges.getChallenges();
+    this.challenges = (await CTFd.pages.challenges.getChallenges()).map(challenge => {
+      // retrieve difficulty
+      const difficulty_str = challenge.tags?.find(f =>
+        f.value.startsWith("difficulty-"),
+      );
+      let difficulty = 0;
+      if (!!difficulty_str) {
+        difficulty = parseInt(difficulty_str.value.substring("difficulty-".length));
+        if (Number.isNaN(difficulty)) {
+          difficulty = 0;
+        }
+      }
+      challenge.difficulty = difficulty;
+
+      return challenge;
+    });
+
     this.categories = this.getCategories();
   },
 
-  getChallengesOf(category) {
+  selectCategory(category) {
+    category = category.toLowerCase();
+    if (!this.categories.includes(category)) {
+      console.warn(`There's no such category ${category}.`);
+      category = "all";
+    }
+    this.selection.category = category;
+
     let challenges = this.challenges;
 
-    if (category !== null) {
+    if (category !== "all") {
       challenges = challenges.filter(challenge => challenge.category === category);
     }
 
-    try {
-      const f = CTFd.config.themeSettings.challenge_order;
-      if (f) {
-        const getSort = new Function(`return (${f})`);
-        challenges.sort(getSort());
-      }
-    } catch (error) {
-      // Ignore errors with theme challenge sorting
-      console.log("Error running challenge_order function");
-      console.log(error);
-    }
+    challenges.sort((a, b) => a[this.selection.sort] < b[this.selection.sort]);
 
-    return challenges;
+    this.challenges_shown = challenges;
+    if (this.challenges_shown.length > 0) {
+      this.selectChallenge(this.challenges_shown[0].id);
+    }
   },
 
   // load details of the challenge from server
   async loadChallenge(challengeId) {
     const idx = this.challenges.findIndex(c => c.id === challengeId);
-    if(idx == -1) return null;
-  
+    if (idx == -1) return null;
+
     if (!("detail" in this.challenges[idx])) {
       this.challenges[idx].detail = null;
-      await CTFd.pages.challenge.displayChallenge(challengeId, challenge => { 
+      await CTFd.pages.challenge.displayChallenge(challengeId, challenge => {
         this.challenges[idx].detail = challenge.data;
-        window.dispatchEvent(new CustomEvent('update-challenge', {detail: this.currentChallenge()}))
+        window.dispatchEvent(
+          new CustomEvent("update-challenge", { detail: this.currentChallenge() }),
+        );
       });
     }
   },
 
-  currentChallengeId(){
-    return this.getChallengesOf(this.selection.category)[this.selection.challenge_idx].id;
+  // get the challenge which is selected from the list now.
+  currentChallenge() {
+    return this.challenges_shown[this.selection.challenge_idx];
   },
 
-  // get current challenge object
-  currentChallenge(){
-    return this.challenges.find(c => c.id === this.currentChallengeId());
-  },
+  selectChallenge(challengeId) {
+    if (!challengeId) return;
+    if (this.selection.challenge_id === challengeId) return; // TODO: open details
 
-  selectChallenge(challengeId){
-    if(this.currentChallengeId()===challengeId) return; // TODO: open details
-
-    let idx = this.getChallengesOf(this.selection.category).findIndex(c => c.id === challengeId);
-    if(idx === -1) {
-      this.selection.category = null;
-      idx = this.getChallengesOf(this.selection.category).findIndex(c => c.id === challengeId);
-      if(idx === -1 ) {
-        console.log(`Challenge ${challengeId} does not exist.`)
+    let idx = this.challenges_shown.findIndex(c => c.id === challengeId);
+    if (idx === -1) {
+      // select all category and retry
+      if (this.selection.category !== "all") {
+        this.selectCategory("all");
+        this.selectChallenge(challengeId);
+      } else {
+        console.warn(`Challenge ${challengeId} does not exist.`);
         return;
       }
     }
     this.selection.challenge_idx = idx;
     this.selection.challenge_id = challengeId;
     this.loadChallenge(challengeId);
-    window.dispatchEvent(new CustomEvent('update-challenge', {detail: this.currentChallenge()}))
-
+    window.dispatchEvent(
+      new CustomEvent("update-challenge", { detail: this.currentChallenge() }),
+    );
   },
 
-  selectNextChallenge(){
-    const current_list = this.getChallengesOf(this.selection.category);
+  selectNextChallenge() {
     let new_idx = this.selection.challenge_idx + 1;
-    let l = this.challenges.length;
-    if(new_idx >= l) {
+    let l = this.challenges_shown.length;
+    if (new_idx >= l) {
       new_idx = l - 1;
-    }
-    else{
-      this.selectChallenge(current_list[new_idx].id)
-    }
-  },
-  
-  selectPreviousChallenge(){
-    const current_list = this.getChallengesOf(this.selection.category);
-    let new_idx = this.selection.challenge_idx - 1;
-    if(new_idx < 0) {
-      new_idx = 0;
-    }
-    else{
-      this.selectChallenge(current_list[new_idx].id)
+    } else {
+      this.selectChallenge(this.challenges_shown[new_idx].id);
     }
   },
-})
 
+  selectPreviousChallenge() {
+    let new_idx = this.selection.challenge_idx - 1;
+    if (new_idx < 0) {
+      new_idx = 0;
+    } else {
+      this.selectChallenge(this.challenges_shown[new_idx].id);
+    }
+  },
+});
 
 Alpine.store("challenge", {
   data: {
@@ -312,10 +327,11 @@ Alpine.data("Challenge", () => ({
 
 Alpine.data("ChallengeBoard", () => ({
   loaded: false,
-  challenge: null,
 
   async init() {
-    await Alpine.store('info').loadChallengeList();
+    await Alpine.store("info").loadChallengeList();
+    Alpine.store("info").selectCategory("all");
+
     this.loaded = true;
 
     if (window.location.hash) {
@@ -324,32 +340,28 @@ Alpine.data("ChallengeBoard", () => ({
       if (idx >= 0) {
         let pieces = [chalHash.slice(0, idx), chalHash.slice(idx + 1)];
         let id = pieces[1];
-        Alpine.store('info').selectChallenge(id);
+        Alpine.store("info").selectChallenge(id);
       }
-    }
-    else{
-      if(Alpine.store('info').challenges.length > 0){
+    } else {
+      if (Alpine.store("info").challenges.length > 0) {
         // automatically select the very first challenge
-        Alpine.store('info').loadChallenge(Alpine.store('info').challenges[0].id);
+        Alpine.store("info").loadChallenge(Alpine.store("info").challenges[0].id);
       }
-
     }
   },
-  
-  handleWheel(event){
-    if(event.deltaY > 0) {
-      Alpine.store('info').selectNextChallenge();
-    }
-    else if(event.deltaY < 0){
-      Alpine.store('info').selectPreviousChallenge();
+
+  handleWheel(event) {
+    if (event.deltaY > 0) {
+      Alpine.store("info").selectNextChallenge();
+    } else if (event.deltaY < 0) {
+      Alpine.store("info").selectPreviousChallenge();
     }
   },
 }));
 
-Alpine.data('ChallengeInfo', () => ({
-
+Alpine.data("ChallengeInfo", () => ({
   // copy of the current challenge, to make life easier
-  challenge: {name: 'Nothing here', category: 'CTF'},
+  challenge: { name: "Nothing here", category: "CTF" },
   loaded_challenge: null,
 
   // used only for loading animation
@@ -357,46 +369,37 @@ Alpine.data('ChallengeInfo', () => ({
   loading_timeout: null,
 
   getChallengeThumbnail() {
-    const one = this.challenge.detail?.files?.find(f => f.includes('.png'))
+    const one = this.challenge.detail?.files?.find(f => {
+      const lastslash = f.lastIndexOf("/");
+      const questionmark = f.indexOf("?", lastslash);
+      const filename = f.substring(lastslash, questionmark);
+      return [".png", ".jpg", ".jpeg", ".gif", ".svg", "bmp"].some(ext =>
+        filename.endsWith(ext),
+      );
+    });
     if (!one) return;
-    const query_idx = one.lastIndexOf('?');
-    return one.substring(0,query_idx)
-  },
-  
-  getChallengeDifficulty() {
-    const difficulty_str = this.challenge.tags?.find(f => f.value.startsWith('difficulty-'));
-    if(!difficulty_str) {
-      return 0;
-    }
-    const maybe_number = parseInt(difficulty_str.value.substring('difficulty-'.length))
-    if(Number.isNaN(maybe_number)){
-      return 0;
-    }
-    else{
-      return maybe_number;
-    }
+    const query_idx = one.lastIndexOf("?");
+    return one.substring(0, query_idx);
   },
 
   handleUpdateChallenge(event) {
     this.loaded_challenge = event.detail;
 
-    this.loading=true;
-    if(this.loading_timeout){
-      clearTimeout(this.loading_timeout)
+    this.loading = true;
+    if (this.loading_timeout) {
+      clearTimeout(this.loading_timeout);
     }
-    this.loading_timeout = setTimeout(()=>{ 
-      this.challenge=this.loaded_challenge;
+    this.loading_timeout = setTimeout(() => {
+      this.challenge = this.loaded_challenge;
 
       // this.loading is set to false when image is loaded.
-      Alpine.nextTick(()=>{
-        if(this.$refs.challenge_info_img.complete) {
-          this.loading=false;
+      Alpine.nextTick(() => {
+        if (this.$refs.challenge_info_img.complete) {
+          this.loading = false;
         }
-      })
-      
-    },300);
-  }
-  
+      });
+    }, 100);
+  },
 }));
 
 Alpine.start();

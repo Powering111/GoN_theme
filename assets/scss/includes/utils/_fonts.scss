@@ -1,28 +1,20 @@
-@use "~/@fontsource/lato/scss/mixins" as Lato;
-@use "~/@fontsource/raleway/scss/mixins" as Raleway;
+@use "~/@fontsource/chakra-petch/scss/mixins" as Chakra;
+@use "~/@fontsource-variable/nunito-sans/scss/mixins" as Nunito;
+@use "~/@fontsource-variable/noto-sans-kr/scss/mixins" as Notosanskr;
 
-// Include both normal and bold weights
-@include Lato.fontFace($fontDir: "../webfonts", $weight: 400);
-@include Lato.fontFace($fontDir: "../webfonts", $weight: 700);
+@include Chakra.faces($directory: "../webfonts");
+@include Nunito.faces($directory: "../webfonts");
+@include Notosanskr.faces($directory: "../webfonts");
 
-@include Raleway.fontFace($fontDir: "../webfonts");
-
-$fa-font-path: "../webfonts";
-@import "~/@fortawesome/fontawesome-free/scss/fontawesome.scss";
-@import "~/@fortawesome/fontawesome-free/scss/solid.scss";
-@import "~/@fortawesome/fontawesome-free/scss/brands.scss";
-
-html,
-body,
-.container {
+* {
   color: white;
-  font-family: "Lato", sans-serif;
-}
-
-.jumbotron .container {
-  font-family: "Raleway", sans-serif;
+  font-family: "Nunito Sans Variable", "Noto Sans KR Variable", sans-serif;
 }
 
 button {
   color: white;
+}
+
+.font-title {
+  font-family: "Chakra Petch";
 }

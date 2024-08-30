@@ -18,21 +18,16 @@ export default defineConfig({
       plugins: [
         copy({
           targets: [
-            // https://github.com/vitejs/vite/issues/1618#issuecomment-764579557
             {
-              src: "./node_modules/@fortawesome/fontawesome-free/webfonts/**/*",
+              src: "./node_modules/@fontsource/chakra-petch/files/**/*400*-normal*",
               dest: "static/webfonts",
             },
             {
-              src: "./node_modules/@fontsource/lato/files/**/*400*-normal*",
+              src: "./node_modules/@fontsource-variable/nunito-sans/files/**/*-normal*",
               dest: "static/webfonts",
             },
             {
-              src: "./node_modules/@fontsource/lato/files/**/*700*-normal*",
-              dest: "static/webfonts",
-            },
-            {
-              src: "./node_modules/@fontsource/raleway/files/**/*400*-normal*",
+              src: "./node_modules/@fontsource-variable/noto-sans-kr/files/**/*-normal*",
               dest: "static/webfonts",
             },
             {

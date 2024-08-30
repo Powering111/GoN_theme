@@ -14,6 +14,9 @@ nav.navigation {
     justify-content: space-between;
 
     backdrop-filter: blur(3px);
+    
+    opacity:1;
+    transition: opacity 0.3s;
 
     .navigation-head {
         width: 100%;
@@ -21,6 +24,8 @@ nav.navigation {
         display: flex;
         flex-flow: row wrap;
         justify-content: center;
+
+        transition: transform 0.2s;
 
         .navigation-elem {
             display: inline-block;
@@ -59,8 +64,6 @@ nav.navigation {
                 transition: mask-position 0.3s ease-out;
             }
 
-            transition: transform 0.2s;
-
             &:hover {
                 transform: scale(1.2);
 
@@ -86,19 +89,18 @@ nav.navigation {
 
         .navigation-elem {
             $navigation-image-size: 70px;
+            
+            display: inline-block;
+            margin: 20px;
+            
+            cursor: pointer;
+            
+            transition: filter 0.1s, transform 0.1s;
 
             img {
                 width: $navigation-image-size;
                 height: $navigation-image-size;
             }
-
-            display: inline-block;
-            margin: 20px;
-
-            cursor: pointer;
-
-            transition: filter 0.1s,
-            transform 0.1s;
 
             &:hover {
                 filter: brightness(1.2);
@@ -124,8 +126,6 @@ nav.navigation {
         }
     }
 
-    opacity:1;
-    transition: opacity 0.3s;
 
     .navigation-head {
         transform: none;

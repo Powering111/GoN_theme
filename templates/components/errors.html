@@ -1,19 +1,14 @@
-<div>
+<div class="alert-box">
   {% for info in infos %}
-    <div class="alert alert-info alert-dismissible text-center" role="alert">
-      <span>{{ info }}</span>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true"></span>
-      </button>
+    <div x-data="{ show: true }" x-show="show" class="alert alert-info">
+      <p>{{ info }}</p>
+      <button type="button" class="btn-close" @click="show=false">Close</button>
     </div>
   {% endfor %}
-
   {% for error in errors %}
-    <div class="alert alert-danger alert-dismissible text-center" role="alert">
-      <span>{{ error }}</span>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true"></span>
-      </button>
+    <div x-data="{ show: true }" class="alert alert-error">
+      <p>{{ error }}</p>
+      <button type="button" class="btn-close" @click="show=false">Close</button>
     </div>
   {% endfor %}
 </div>
