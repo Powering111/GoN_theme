@@ -4,6 +4,7 @@
 <h1>
   {% trans %}Challenges{% endtrans %}
 </h1>
+{% include "components/profile.html" %}
 {% endblock %}
 {% block content %}
 
@@ -15,7 +16,10 @@
 
 
 <div x-data="ChallengeBoard"
-  @load-challenge.window="loadChallenge($event.detail)" @wheel.passive.window.throttle.10ms="handleWheel"
+  @load-challenge.window="loadChallenge($event.detail)"
+  @wheel.passive.window.throttle.10ms="if($store.info.state == 0) {
+    handleWheel($event)
+  }"
   style="width:100%; height:100%; padding:0; margin:0;"
   >
   <div x-show="!loaded">
@@ -49,7 +53,7 @@
       <p><span class="challenge-info-value" x-text="challenge.value"></span> points</p>
       <p><span class="challenge-info-solves" x-text="challenge.solves"></span> solves</p>
       
-    </div>
+    </div> <!-- challenge-info -->
 
     <div class="challenge-select">
       <!-- category -->
@@ -63,7 +67,7 @@
             ></button>
         </template>
       </div>
-      <!-- challenge list -->
+      <!-- challenges -->
       <div class="challenge-list">
         <template x-for="(c, idx) in $store.info.challenges_shown" :key="c.id">
           <button 
@@ -93,36 +97,78 @@
           </button>
         </template>
       </div>
-    </div>
-  </div>
+
+      <div x-data="ChallengeDetails" @update-challenge.window="handleUpdateChallenge"
+      class="challenge-details" x-show="$store.info.state==2">
+        DETAILS!!!!
+      </div>
+    </div> <!-- challenge-select -->
+  </div> <!-- challenge-board -->
 </div>
 {% endblock %}
 
 {% block footer %}
-
-<button class="footer-elem" 
+<footer
   x-data
-  @keydown.window.up.prevent="$store.info.selectPreviousChallenge()"
-  @keydown.window.down.prevent="$store.info.selectNextChallenge()">
-  <span class="footer-highlight">↑↓</span>
-  Select challenge
-</button>
+  @open-navigation.window="$store.info.state=1"
+  @close-navigation.window="$store.info.state=0"
+  >
 
-<button class="footer-elem" 
-  x-data
-  @click="$dispatch('open-details')"
-  @keydown.window.Enter.prevent="$dispatch('open-details')">
-  <span class="footer-highlight">Enter</span>
-  Open details
-</button>
+  <!-- Main state -->
+  <div x-show="$store.info.state==0">
+    <button class="footer-elem" 
+      x-data
+      @keydown.window.shift="
+      if($store.info.state==0) {
+        if($event.location === KeyboardEvent.DOM_KEY_LOCATION_LEFT){
+          $store.info.selectPreviousCategory();
+          $event.preventDefault();
+        }
+        else if($event.location === KeyboardEvent.DOM_KEY_LOCATION_RIGHT){
+          $store.info.selectNextCategory();
+          $event.preventDefault();
+        }
+      }">
+      <span class="footer-highlight">Lshift/Rshift</span>
+      Select category
+    </button>
+    <button class="footer-elem" 
+      x-data
+      @keydown.window.up.prevent="if($store.info.state==0) $store.info.selectPreviousChallenge()"
+      @keydown.window.down.prevent="if($store.info.state==0) $store.info.selectNextChallenge()">
+      <span class="footer-highlight">↑↓</span>
+      Select challenge
+    </button>
 
-<button class="footer-elem" 
-  x-data
-  @click="$dispatch('open-navigation')"
-  @keydown.window.Escape.prevent="$dispatch('open-navigation')">
-  <span class="footer-highlight">Esc</span>
-  Open menu
-</button>
+    <button class="footer-elem" 
+      x-data
+      @click="$dispatch('open-details')"
+      @keydown.window.Enter.prevent="if($store.info.state==0) $dispatch('open-details')">
+      <span class="footer-highlight">Enter</span>
+      Open details
+    </button>
+
+    <button class="footer-elem" 
+      x-data
+      @click="$dispatch('open-navigation')"
+      @keydown.window.Escape.prevent="if($store.info.state==0) $dispatch('open-navigation')">
+      <span class="footer-highlight">Esc</span>
+      Open menu
+    </button>
+  </div>
+
+  <div x-show="$store.info.state==2">
+    <button class="footer-elem" 
+      x-data
+      @click="$dispatch('close-details')"
+      @open-details.window="$store.info.state = 2"
+      @close-details.window="$store.info.state = 0"
+      @keydown.window.Escape.prevent="if($store.info.state==2) $nextTick(()=>$dispatch('close-navigation'))">
+      <span class="footer-highlight">Esc</span>
+      Close details
+    </button>
+  </div>
+</footer>
 
 {% endblock %}
 

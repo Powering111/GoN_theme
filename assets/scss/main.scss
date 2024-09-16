@@ -28,6 +28,7 @@ a {
 button,
 img {
   user-select: none;
+  outline: none;
 }
 
 blockquote {
@@ -74,6 +75,9 @@ body,
 
 header {
   padding: 10px 30px;
+  display:flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
   h1 {
     margin: 0;
   }
@@ -185,4 +189,35 @@ div,
 img,
 main {
   box-sizing: border-box;
+}
+
+
+.container{
+  display:flex;
+  flex-flow :row nowrap;
+  justify-content: center;
+  align-items: stretch;
+}
+
+input[type="text"],input[type="password"] {
+  padding: 10px;
+  background: white;
+  color: black;
+  outline:none;
+  border: 2px solid black;
+  border-radius: 5px;
+  &:focus{
+    border-color: blue;
+  }
+}
+
+.btn {
+  color: black;
+  background: white;
+  cursor: pointer;
+  width:100%;
+
+  &:hover {
+    background: gray;
+  }
 }

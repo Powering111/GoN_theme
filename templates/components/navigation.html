@@ -1,8 +1,10 @@
 <!-- fullscreen navigation -->
 <nav ref="navigation" class="navigation" x-data="{ visible:false }" x-cloak x-show="visible"
     x-transition:enter-start="transition-enter-start" x-transition:leave="transition-leave"
-    @open-navigation.window="visible = !visible"
-    @click="visible=false">
+    @open-navigation.window="visible = true"
+    @close-navigation.window="visible = false"
+    @click="$dispatch('close-navigation')"
+    @keydown.window.Escape.prevent="if(visible) $nextTick(()=>$dispatch('close-navigation'))">
     <div class="navigation-head">
         <!-- Home -->
         <a class="navigation-elem" href="/">

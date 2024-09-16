@@ -19,6 +19,7 @@ function addTargetBlank(html) {
 window.Alpine = Alpine;
 
 Alpine.store("info", {
+  state: 0,
   categories: [],
   challenges: [],
   challenges_shown: [],
@@ -106,9 +107,11 @@ Alpine.store("info", {
       this.challenges[idx].detail = null;
       await CTFd.pages.challenge.displayChallenge(challengeId, challenge => {
         this.challenges[idx].detail = challenge.data;
-        window.dispatchEvent(
-          new CustomEvent("update-challenge", { detail: this.currentChallenge() }),
-        );
+        if(this.selection.challenge_id === challengeId){
+          window.dispatchEvent(
+            new CustomEvent("update-challenge", { detail: this.currentChallenge() }),
+          );
+        }
       });
     }
   },
@@ -141,6 +144,7 @@ Alpine.store("info", {
     );
   },
 
+  // TODO: make selection round
   selectNextChallenge() {
     let new_idx = this.selection.challenge_idx + 1;
     let l = this.challenges_shown.length;
@@ -157,6 +161,26 @@ Alpine.store("info", {
       new_idx = 0;
     } else {
       this.selectChallenge(this.challenges_shown[new_idx].id);
+    }
+  },
+
+
+  selectNextCategory() {
+    let new_idx = this.categories.indexOf(this.selection.category) + 1;
+    let l = this.categories.length;
+    if (new_idx >= l) {
+      new_idx = l - 1;
+    } else {
+      this.selectCategory(this.categories[new_idx]);
+    }
+  },
+  
+  selectPreviousCategory() {
+    let new_idx = this.categories.indexOf(this.selection.category) - 1;
+    if (new_idx < 0) {
+      new_idx = 0;
+    } else {
+      this.selectCategory(this.categories[new_idx]);
     }
   },
 });
@@ -399,6 +423,19 @@ Alpine.data("ChallengeInfo", () => ({
         }
       });
     }, 100);
+  },
+}));
+
+Alpine.data('ChallengeDetails', () => ({
+  challenge: null,
+  handleUpdateChallenge(event) {
+    if(!event.detail.detail){
+      // not yet loaded
+      this.$el.innerHTML = 'Loading...';
+    }
+    else{
+      this.$el.innerHTML = event.detail.detail.view;
+    }
   },
 }));
 
