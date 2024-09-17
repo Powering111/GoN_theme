@@ -3,7 +3,6 @@ import dayjs from "dayjs";
 
 import CTFd from "./index";
 
-import { Modal, Tab, Tooltip } from "bootstrap";
 import highlight from "./theme/highlight";
 
 function addTargetBlank(html) {
@@ -183,6 +182,13 @@ Alpine.store("info", {
       this.selectCategory(this.categories[new_idx]);
     }
   },
+
+  async refreshChallengeList(){
+    const selected_id = this.selection.challenge_id;
+    await this.loadChallengeList();
+    this.selectCategory(this.selection.category);
+    this.loadChallenge(selected_id);
+  },
 });
 
 Alpine.store("challenge", {
@@ -224,129 +230,8 @@ Alpine.data("Hint", () => ({
 
 Alpine.data("Challenge", () => ({
   id: null,
-  next_id: null,
-  submission: "",
   tab: null,
-  solves: [],
-  response: null,
-  share_url: null,
-  max_attempts: 0,
-  attempts: 0,
 
-  async init() {
-    highlight();
-  },
-
-  getStyles() {
-    let styles = {
-      "modal-dialog": true,
-    };
-    try {
-      let size = CTFd.config.themeSettings.challenge_window_size;
-      switch (size) {
-        case "sm":
-          styles["modal-sm"] = true;
-          break;
-        case "lg":
-          styles["modal-lg"] = true;
-          break;
-        case "xl":
-          styles["modal-xl"] = true;
-          break;
-        default:
-          break;
-      }
-    } catch (error) {
-      // Ignore errors with challenge window size
-      console.log("Error processing challenge_window_size");
-      console.log(error);
-    }
-    return styles;
-  },
-
-  async showChallenge() {
-    new Tab(this.$el).show();
-  },
-
-  async showSolves() {
-    this.solves = await CTFd.pages.challenge.loadSolves(this.id);
-    this.solves.forEach(solve => {
-      solve.date = dayjs(solve.date).format("MMMM Do, h:mm:ss A");
-      return solve;
-    });
-    new Tab(this.$el).show();
-  },
-
-  getNextId() {
-    let data = Alpine.store("challenge").data;
-    return data.next_id;
-  },
-
-  async nextChallenge() {
-    let modal = Modal.getOrCreateInstance("[x-ref='challengeWindow']");
-
-    // TODO: Get rid of this private attribute access
-    // See https://github.com/twbs/bootstrap/issues/31266
-    modal._element.addEventListener(
-      "hidden.bs.modal",
-      event => {
-        // Dispatch load-challenge event to call loadChallenge in the ChallengeBoard
-        Alpine.nextTick(() => {
-          this.$dispatch("load-challenge", this.getNextId());
-        });
-      },
-      { once: true },
-    );
-    modal.hide();
-  },
-
-  async getShareUrl() {
-    let body = {
-      type: "solve",
-      challenge_id: this.id,
-    };
-    const response = await CTFd.fetch("/api/v1/shares", {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
-    const data = await response.json();
-    const url = data["data"]["url"];
-    this.share_url = url;
-  },
-
-  copyShareUrl() {
-    navigator.clipboard.writeText(this.share_url);
-    let t = Tooltip.getOrCreateInstance(this.$el);
-    t.enable();
-    t.show();
-    setTimeout(() => {
-      t.hide();
-      t.disable();
-    }, 2000);
-  },
-
-  async submitChallenge() {
-    this.response = await CTFd.pages.challenge.submitChallenge(
-      this.id,
-      this.submission,
-    );
-
-    await this.renderSubmissionResponse();
-  },
-
-  async renderSubmissionResponse() {
-    if (this.response.data.status === "correct") {
-      this.submission = "";
-    }
-
-    // Increment attempts counter
-    if (this.max_attempts > 0 && this.response.data.status != "already_solved") {
-      this.attempts += 1;
-    }
-
-    // Dispatch load-challenges event to call loadChallenges in the ChallengeBoard
-    this.$dispatch("load-challenges");
-  },
 }));
 
 Alpine.data("ChallengeBoard", () => ({
@@ -428,15 +313,106 @@ Alpine.data("ChallengeInfo", () => ({
 
 Alpine.data('ChallengeDetails', () => ({
   challenge: null,
+  submission: "",
+  solves: null,
+  response: null,
+  share_url: null,
+  // locally save attempt
+  attempts: 0,
+  max_attempts: 0,
+
+
   handleUpdateChallenge(event) {
+    this.solves = null;
+    this.response = null;
+    this.share_url = null;
+    this.attempts = 0;
+    this.max_attempts = 0;
+    this.submission = "";
     if(!event.detail.detail){
       // not yet loaded
       this.$el.innerHTML = 'Loading...';
+      this.challenge = null;
     }
     else{
-      this.$el.innerHTML = event.detail.detail.view;
+      this.challenge = event.detail;
+      this.$el.innerHTML = this.challenge.detail.view;
+      this.attempts = this.challenge.detail.attempts;
+      this.max_attempts = this.challenge.detail.max_attempts;
     }
   },
+  
+  getNextId() {
+    return this.challenge?.next_id;
+  },
+
+  async getShareUrl() {
+    let body = {
+      type: "solve",
+      challenge_id: this.challenge.id,
+    };
+    const response = await CTFd.fetch("/api/v1/shares", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    const url = data["data"]["url"];
+    this.share_url = url;
+  },
+
+  copyShareUrl() {
+    navigator.clipboard.writeText(this.share_url);
+    let t = Tooltip.getOrCreateInstance(this.$el);
+    t.enable();
+    t.show();
+    setTimeout(() => {
+      t.hide();
+      t.disable();
+    }, 2000);
+  },
+
+  async submitChallenge() {
+    this.response = await CTFd.pages.challenge.submitChallenge(
+      this.challenge.id,
+      this.submission,
+    );
+
+    await this.renderSubmissionResponse();
+  },
+
+  async renderSubmissionResponse() {
+    if (this.response.data.status === "correct") {
+      this.submission = "";
+    }
+
+    // Increment attempts counter
+    if (this.max_attempts > 0 && this.response.data.status != "already_solved") {
+      this.attempts += 1;
+    }
+
+    // Dispatch refresh-challenge-list event to call refreshChallengeList in the ChallengeBoard
+    this.$dispatch("refresh-challenge-list");
+  },
+
+  async init() {
+    highlight();
+  },
+
+  async showSolves() {
+    this.solves = await CTFd.pages.challenge.loadSolves(this.challenge.id);
+    this.solves.forEach(solve => {
+      solve.date = dayjs(solve.date).format("MMMM Do, h:mm:ss A");
+      return solve;
+    });
+  },
+
+  // next challenge for linked challenges
+  async nextChallenge() {
+    if(this.challenge?.next_id){
+      Alpine.store('info').selectChallenge(this.challenge.next_id);
+    }
+  },
+
 }));
 
 Alpine.start();
